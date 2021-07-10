@@ -3,30 +3,51 @@ import './App.css';
 import MySkyButton from './components/MySkyButton';
 import { SkynetClient } from "skynet-js";
 import TodoList from './components/TodoList';
+import { ContentRecordDAC } from '@skynetlabs/content-record-library';
+
 
 const portal =
   window.location.hostname === 'localhost' ? 'https://siasky.net' : undefined;
+  
+console.log("portal: ", portal);
 
 // Initiate the SkynetClient
 const client = new SkynetClient(portal);
+const contentRecord = new ContentRecordDAC();
 
 function App() {
   const [userID, setUserID] = useState();
   const [mySky, setMySky] = useState();
   const [loggedIn, setLoggedIn] = useState(null);
+  const [data, setData] = useState(null);
 
   const dataDomain = 'localhost';
+  
   
   useEffect(() => {
     async function initMySky() {
       try {
         const mySky = await client.loadMySky(dataDomain);
+        
         const loggedIn = await mySky.checkLogin();
         setMySky(mySky);
         setLoggedIn(loggedIn);
 
+        
         if (loggedIn) {
           setUserID(await mySky.userID());
+          try {
+
+            await mySky.loadDacs(contentRecord);
+            const { data } = await mySky.getJSON('localhost');
+            setData(data);
+            console.log("loaded data init: ", data);
+
+          } catch (e) {
+            console.log('getJSON failed on initMySky(): ');
+            console.error(e);
+          }
+
         }
 
       } catch (e) {
@@ -50,10 +71,26 @@ function App() {
       }
       console.log("MySky login success!");
 
+      try {
+
+        await mySky.loadDacs(contentRecord);
+        const { data } = await mySky.getJSON('localhost');
+        setData(data);
+        console.log("loaded data login: ", data);
+
+      } catch (e) {
+        console.log('getJSON failed on handleMySkyLogin(): ');
+        console.error(e);
+      }
+      
+
     } catch (e) {
       console.log("MySky login failure: ");
       console.error(e);
     }
+
+
+
     
   };
 
@@ -78,7 +115,8 @@ function App() {
     userID, 
     dataDomain,
     handleMySkyLogin,
-    handleMySkyLogout
+    handleMySkyLogout, 
+    data
     
   };
 
@@ -86,10 +124,10 @@ function App() {
     <div className="App">
       <h1>Todo Skapp!</h1>
       <MySkyButton {...MySkyButtonProps}/>
-
-      <div classname='todo-app'>
-        {loggedIn == true && <TodoList /> }
-        {loggedIn == false && <div>Log in to use!</div>}
+      
+      <div> 
+        {loggedIn == true && <TodoList {...MySkyButtonProps} /> }
+        {loggedIn == false && <div id='log-in'>Log in to use!</div>}
       </div>
     </div>
    

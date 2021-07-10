@@ -14,6 +14,7 @@ function TodoForm(props) {
 
   const handleChange = e => {
     setInput(e.target.value);
+    
   };
 
   const handleSubmit = e => {
@@ -24,6 +25,7 @@ function TodoForm(props) {
       text: input
     });
     setInput('');
+    console.log("handleSubmit called!!");
   };
 
   return (
