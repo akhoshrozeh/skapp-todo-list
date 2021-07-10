@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import MySkyButton from './components/MySkyButton';
 import { SkynetClient } from "skynet-js";
+import TodoList from './components/TodoList';
 
 const portal =
   window.location.hostname === 'localhost' ? 'https://siasky.net' : undefined;
@@ -63,7 +64,8 @@ function App() {
       setLoggedIn(false);
       setUserID('');
       console.log("MySky logout success!");
-    } catch (e) {
+
+    } catch (e) { 
       console.log("MySky logout failure: ");
       console.error(e);
     }
@@ -84,7 +86,13 @@ function App() {
     <div className="App">
       <h1>Todo Skapp!</h1>
       <MySkyButton {...MySkyButtonProps}/>
+
+      <div classname='todo-app'>
+        {loggedIn == true && <TodoList /> }
+        {loggedIn == false && <div>Log in to use!</div>}
+      </div>
     </div>
+   
   );
 }
 
